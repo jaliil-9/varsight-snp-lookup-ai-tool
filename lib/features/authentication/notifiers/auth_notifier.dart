@@ -52,7 +52,6 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         ref.invalidate(profileProvider);
         return AuthAuthenticated(user);
       }
-      ;
       throw AuthException('Login failed');
     });
   }
@@ -74,7 +73,6 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         ref.invalidate(profileProvider);
         return AuthAuthenticated(user);
       }
-      ;
       throw AuthException('Registration failed');
     });
   }

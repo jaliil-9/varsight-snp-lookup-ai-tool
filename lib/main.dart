@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:varsight/config/routes.dart';
@@ -14,14 +15,16 @@ Future<void> main() async {
   // Initialize Flutter Native Splash
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
+
   // Initialize local storage
   await JLocalStorage.init();
 
   // Initialize Supabase
   await Supabase.initialize(
-    url: "https://uuhmmjxolbiqyyrlmvwc.supabase.co",
-    anonKey:
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1aG1tanhvbGJpcXl5cmxtdndjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NTAzNzAsImV4cCI6MjA2NzAyNjM3MH0.OIgGIWCZ1gnAFZJ4GFAYUq_eqPpSXHnt7xeuivP7GN8",
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
 
   // Remove the native splash screen after initialization
