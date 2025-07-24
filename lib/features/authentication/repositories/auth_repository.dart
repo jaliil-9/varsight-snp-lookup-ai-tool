@@ -19,9 +19,7 @@ class AuthRepository {
       );
 
       // Debug: print the response for troubleshooting
-      print(
-        'Supabase signUp response: user=${response.user}, session=${response.session}',
-      );
+      
 
       if (response.user == null) {
         // Check if email confirmation is required
@@ -40,7 +38,6 @@ class AuthRepository {
 
       return response;
     } catch (error) {
-      print('Registration error: $error');
       throw Exception(error.toString());
     }
   }

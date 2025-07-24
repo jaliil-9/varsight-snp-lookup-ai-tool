@@ -15,7 +15,7 @@ class AppRoutes {
   static final routes = {
     '/': (context) => const MainNavScreen(),
     '/auth': (context) => const AuthGatePage(),
-    "/login": (context) => LoginPage(),
+    "/login": (context) => const LoginPage(),
     '/register': (context) => const RegisterPage(),
     '/reset-password': (context) => const ForgotPasswordPage(),
     '/reset-success': (context) => const ResetSuccessPage(),

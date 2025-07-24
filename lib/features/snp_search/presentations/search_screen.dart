@@ -4,9 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:varsight/core/constants/colors.dart';
 import 'package:varsight/core/constants/sizes.dart';
+import 'package:varsight/features/snp_search/models/search_state.dart';
 import 'package:varsight/features/snp_search/presentations/widgets/recent_searches_list.dart';
-import 'package:varsight/features/snp_search/presentations/widgets/search_loading_stepper.dart';
 import 'package:varsight/features/snp_search/presentations/widgets/variant_summary_card.dart';
+import 'package:varsight/features/snp_search/presentations/widgets/search_loading_stepper.dart';
 import 'package:varsight/features/snp_search/providers/snp_provider.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -28,32 +29,31 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   Future<void> _performSearch(String query) async {
     if (query.trim().isEmpty) return;
-
     final searchNotifier = ref.read(searchProvider.notifier);
     await searchNotifier.search(query.trim());
-
-    // After search, handle error or success using the AsyncValue
-    final searchAsync = ref.read(searchProvider);
-    searchAsync.when(
-      data: (searchState) async {
-        if (searchState.dossier != null) {
-          final snpNotifier = ref.read(snpDossierProvider.notifier);
-          await snpNotifier.saveDossierLocally(searchState.dossier!);
-        }
-      },
-      error: (err, stack) {
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(err.toString())));
-        }
-      },
-      loading: () {},
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<SearchState>>(searchProvider, (previous, next) {
+      next.when(
+        data: (searchState) async {
+          if (searchState.dossier != null) {
+            final snpNotifier = ref.read(snpDossierProvider.notifier);
+            await snpNotifier.saveDossierLocally(searchState.dossier!);
+          }
+        },
+        error: (err, stack) {
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(err.toString())));
+          }
+        },
+        loading: () {},
+      );
+    });
+
     final searchAsync = ref.watch(searchProvider);
 
     return Scaffold(
@@ -68,7 +68,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           IconButton(
             icon: const Icon(Iconsax.user),
             onPressed: () {
-              Navigator.pushNamed(context, '/favourites');
+              Navigator.pushNamed(context, '/profile');
             },
           ),
         ],
@@ -92,36 +92,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ),
               ),
             ),
-            SizedBox(height: Sizes.spaceBtwSections),
+            const SizedBox(height: Sizes.spaceBtwSections),
             Form(
               key: _formKey,
-              child: searchAsync.when(
-                data:
-                    (searchState) => SearchInputField(
-                      controller: _searchController,
-                      onSubmitted: (value) {
-                        if (_formKey.currentState!.validate()) {
-                          _performSearch(value);
-                        }
-                      },
-                      isLoading: searchState.isLoading,
-                    ),
-                loading:
-                    () => SearchInputField(
-                      controller: _searchController,
-                      onSubmitted: (_) {},
-                      isLoading: true,
-                    ),
-                error:
-                    (err, stack) => SearchInputField(
-                      controller: _searchController,
-                      onSubmitted: (value) {
-                        if (_formKey.currentState!.validate()) {
-                          _performSearch(value);
-                        }
-                      },
-                      isLoading: false,
-                    ),
+              child: SearchInputField(
+                controller: _searchController,
+                onSubmitted: (value) {
+                  if (_formKey.currentState!.validate()) {
+                    _performSearch(value);
+                  }
+                },
+                isLoading: searchAsync.isLoading,
               ),
             ),
             const SizedBox(height: Sizes.spaceBtwSections),
@@ -137,13 +118,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     snpData: searchState.dossier!.snpData,
                     showViewFullResultButton: true,
                   );
-                } else if (!searchState.isLoading) {
-                  return const RecentSearchesList();
                 } else {
-                  return const SizedBox.shrink();
+                  return const RecentSearchesList();
                 }
               },
-              loading: () => const SizedBox.shrink(),
+              loading: () => const SizedBox.shrink(), // The stepper handles the visual loading state
               error: (err, stack) => const RecentSearchesList(),
             ),
           ],
@@ -177,8 +156,11 @@ class SearchInputField extends StatelessWidget {
         validator: (value) {
           if (value == null || value.trim().isEmpty) {
             return 'Please enter a valid SNP rsID';
-          } else if (!RegExp(r'^rs\d+$').hasMatch(value.trim())) {
-            return 'Invalid SNP rsID format. Use "rs" followed by digits (e.g., rs1805008)';
+          } else if (!RegExp(
+            r'^rs\d+$',
+            caseSensitive: false,
+          ).hasMatch(value.trim())) {
+            return 'Invalid rsID format (e.g., rs1805008)';
           }
           return null;
         },

@@ -1,16 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:varsight/features/snp_search/models/search_step.dart';
 import 'package:varsight/features/snp_search/models/variant_model.dart';
 
-enum SearchStep {
-  geneInfo('Fetching gene information'),
-  literature('Analyzing research literature'),
-  synthesis('Synthesizing results');
-
-  final String label;
-  const SearchStep(this.label);
-}
-
-@immutable
 class SearchState {
   final bool isLoading;
   final String? error;
@@ -35,10 +25,10 @@ class SearchState {
   }) {
     return SearchState(
       isLoading: isLoading ?? this.isLoading,
-      error: error,
+      error: error ?? this.error,
       dossier: dossier ?? this.dossier,
       currentStep: currentStep,
-      stepStartTime: stepStartTime ?? this.stepStartTime,
+      stepStartTime: stepStartTime,
     );
   }
 

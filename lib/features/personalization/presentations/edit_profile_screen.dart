@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:varsight/core/utils/error.dart';
 import 'package:varsight/features/personalization/providers/profile_providers.dart';
+import 'package:varsight/features/authentication/providers/auth_provider.dart';
+import 'package:varsight/features/authentication/notifiers/auth_notifier.dart';
 import 'package:varsight/core/utils/helpers.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -37,7 +39,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final profileNotifier = ref.read(profileProvider.notifier);
-    final userId = ref.read(profileProvider).value?.id;
+    final authState = ref.read(authNotifierProvider).value;
+    final userId = authState is AuthAuthenticated ? authState.user.id : null;
 
     if (userId != null) {
       await profileNotifier.saveProfileChanges(
@@ -47,17 +50,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       );
       if (mounted) Navigator.pop(context);
     } else {
-      ErrorUtils.showErrorSnackBar("Could not save profile. User not found.");
+      ErrorUtils.showErrorSnackBar(
+        context,
+        "Could not save profile. User not found.",
+      );
     }
   }
 
   Future<void> _pickImage() async {
     final profileNotifier = ref.read(profileProvider.notifier);
-    final userId = ref.read(profileProvider).value?.id;
+    final authState = ref.read(authNotifierProvider).value;
+    final userId = authState is AuthAuthenticated ? authState.user.id : null;
     if (userId != null) {
       await profileNotifier.pickAndUploadImage(userId);
     } else {
-      ErrorUtils.showErrorSnackBar("Could not upload image. User not found.");
+      ErrorUtils.showErrorSnackBar(
+        context,
+        "Could not upload image. User not found.",
+      );
     }
   }
 
@@ -70,7 +80,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       appBar: AppBar(title: const Text('Edit Profile'), centerTitle: true),
       body: profileAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (err, stack) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ErrorUtils.showErrorSnackBar(
+              context,
+              ErrorUtils.getErrorMessage(err),
+            );
+          });
+          return Center(child: Text('Error loading profile'));
+        },
         data: (profile) {
           final profilePictureUrl = profile?.profilePicture;
           return SingleChildScrollView(

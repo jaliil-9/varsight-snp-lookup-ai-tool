@@ -7,6 +7,7 @@ import 'package:varsight/features/personalization/notifiers/theme_notifier.dart'
 import 'package:varsight/core/utils/helpers.dart';
 import 'package:varsight/features/authentication/providers/auth_provider.dart';
 import 'package:varsight/features/authentication/notifiers/auth_notifier.dart';
+import 'package:varsight/core/utils/error.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -37,18 +38,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             body: const Center(child: CircularProgressIndicator()),
           ),
-      error:
-          (error, stackTrace) => Scaffold(
-            appBar: AppBar(
-              title: Text(
-                'Profile',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              centerTitle: true,
-              automaticallyImplyLeading: false,
+      error: (error, stackTrace) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ErrorUtils.showErrorSnackBar(
+            context,
+            ErrorUtils.getErrorMessage(error),
+          );
+        });
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              'Profile',
+              style: Theme.of(context).textTheme.titleLarge,
             ),
-            body: Center(child: Text('Error: $error')),
+            centerTitle: true,
+            automaticallyImplyLeading: false,
           ),
+          body: Center(child: Text('Error loading profile')),
+        );
+      },
       data: (data) {
         final profileAsync = ref.watch(profileProvider);
         final isGuest = data is AuthGuest;
@@ -83,11 +91,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       radius: 56,
                       child: CircularProgressIndicator(),
                     ),
-                error:
-                    (err, stack) => const CircleAvatar(
-                      radius: 56,
-                      child: Icon(Iconsax.user),
-                    ),
+                error: (err, stack) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    ErrorUtils.showErrorSnackBar(
+                      context,
+                      ErrorUtils.getErrorMessage(err),
+                    );
+                  });
+                  return const CircleAvatar(
+                    radius: 56,
+                    child: Icon(Iconsax.user),
+                  );
+                },
               ),
               const SizedBox(height: 16),
               Text(

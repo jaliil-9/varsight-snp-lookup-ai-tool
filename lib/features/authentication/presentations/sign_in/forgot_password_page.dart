@@ -16,7 +16,6 @@ class ForgotPasswordPage extends ConsumerStatefulWidget {
 class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -26,6 +25,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authNotifierProvider);
+    final isLoading = authState.isLoading;
+
     return Scaffold(
       appBar: AppBar(title: const Text("Forgot Password")),
       body: Padding(
@@ -56,11 +58,10 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed:
-                          _isLoading
+                          isLoading
                               ? null
                               : () async {
                                 if (!_formKey.currentState!.validate()) return;
-                                setState(() => _isLoading = true);
                                 try {
                                   await ref
                                       .read(authNotifierProvider.notifier)
@@ -74,17 +75,16 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                                     );
                                   }
                                 } catch (e) {
-                                  ErrorUtils.showErrorSnackBar(
-                                    ErrorUtils.getErrorMessage(e),
-                                  );
-                                } finally {
                                   if (mounted) {
-                                    setState(() => _isLoading = false);
+                                    ErrorUtils.showErrorSnackBar(
+                                      context,
+                                      ErrorUtils.getErrorMessage(e),
+                                    );
                                   }
                                 }
                               },
                       child:
-                          _isLoading
+                          isLoading
                               ? const CircularProgressIndicator(
                                 color: Colors.white,
                               )

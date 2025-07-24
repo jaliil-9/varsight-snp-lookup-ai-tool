@@ -1,9 +1,8 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:varsight/core/utils/error.dart';
 import 'package:varsight/core/utils/helpers.dart';
-import 'package:varsight/core/utils/network.dart';
+import 'package:varsight/core/services/network.dart';
 import 'package:varsight/features/personalization/models/profile_model.dart';
 import 'package:varsight/features/personalization/providers/profile_providers.dart';
 import 'package:varsight/features/personalization/repositories/profile_repository.dart';
@@ -54,7 +53,6 @@ class ProfileNotifier extends AsyncNotifier<ProfileModel?> {
           lastName: lastName,
         );
 
-        ErrorUtils.showSuccessSnackBar("Profile updated successfully");
         return getCurrentProfile();
       } catch (error) {
         rethrow;
@@ -93,7 +91,7 @@ class ProfileNotifier extends AsyncNotifier<ProfileModel?> {
 
         // Get and return the updated profile
         final updatedProfile = await getCurrentProfile();
-        ErrorUtils.showSuccessSnackBar("Profile picture updated successfully");
+
         return updatedProfile;
       } catch (error) {
         rethrow;

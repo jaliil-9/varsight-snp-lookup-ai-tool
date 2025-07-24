@@ -15,22 +15,29 @@ Future<void> main() async {
   // Initialize Flutter Native Splash
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  // Load environment variables
-  await dotenv.load(fileName: ".env");
+  try {
+    // Load environment variables
+    await dotenv.load(fileName: ".env");
 
-  // Initialize local storage
-  await JLocalStorage.init();
+    // Capture Supabase environment variables into local variables
+    final String supabaseUrl = dotenv.env['SUPABASE_URL']!;
+    final String supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY']!;
 
-  // Initialize Supabase
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-  );
+    // Initialize local storage
+    await JLocalStorage.init();
 
-  // Remove the native splash screen after initialization
-  FlutterNativeSplash.remove();
+    // Initialize Supabase
+    await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
 
-  runApp(const ProviderScope(child: VarSightApp()));
+    // Remove the native splash screen after initialization
+    FlutterNativeSplash.remove();
+
+    runApp(const ProviderScope(child: VarSightApp()));
+  } catch (e) {
+    // Optionally, show an error screen or dialog here if the app can't start
+    // For now, just rethrow to see the error in console
+    rethrow;
+  }
 }
 
 class VarSightApp extends ConsumerWidget {

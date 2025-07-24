@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:varsight/core/constants/colors.dart';
-import 'package:varsight/features/snp_search/models/search_state.dart';
+import 'package:varsight/features/snp_search/models/search_step.dart';
 
 class SearchLoadingStepper extends StatelessWidget {
   final SearchStep currentStep;

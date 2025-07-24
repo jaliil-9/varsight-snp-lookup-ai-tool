@@ -4,26 +4,17 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:varsight/core/services/network.dart'; // Added import
 import 'package:varsight/features/snp_search/models/variant_model.dart';
 import 'package:varsight/features/snp_search/providers/snp_provider.dart';
 
 class SnpDossierNotifier extends AsyncNotifier<VariantModel?> {
+  late final NetworkService _networkService; // Declared network service
+
   @override
   Future<VariantModel?> build() async {
-    // No initial fetch
+    _networkService = ref.read(networkServiceProvider); // Initialized network service
     return null;
-  }
-
-  Future<bool> _ensureConnected() async {
-    try {
-      final result = await InternetAddress.lookup('example.com');
-      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        return true;
-      }
-      return false;
-    } catch (_) {
-      return false;
-    }
   }
 
   Future<void> saveDossierLocally(VariantModel dossier) async {
@@ -45,7 +36,7 @@ class SnpDossierNotifier extends AsyncNotifier<VariantModel?> {
 
   Future<void> fetchDossier(String rsId) async {
     state = const AsyncValue.loading();
-    final isConnected = await _ensureConnected();
+    final isConnected = await _networkService.isConnected(); // Used network service
     if (!isConnected) {
       state = AsyncValue.error('No internet connection. Please check your network.', StackTrace.current);
       return;

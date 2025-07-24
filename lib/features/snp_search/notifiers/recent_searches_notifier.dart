@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:varsight/core/utils/storage.dart';
 
 class RecentSearchesNotifier extends Notifier<List<String>> {
   static const _prefsKey = 'recent_searches';
@@ -11,16 +11,14 @@ class RecentSearchesNotifier extends Notifier<List<String>> {
   }
 
   Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getStringList(_prefsKey) ?? [];
+    final saved = JLocalStorage.instance().readData<List<String>>(_prefsKey) ?? [];
     if (saved.isNotEmpty) {
       state = saved;
     }
   }
 
   Future<void> _saveToPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_prefsKey, state);
+    await JLocalStorage.instance().saveData(_prefsKey, state);
   }
 
   void addSearch(String rsId) {

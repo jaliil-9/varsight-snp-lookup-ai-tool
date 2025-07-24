@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:varsight/features/snp_search/models/variant_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:varsight/core/utils/storage.dart';
 import 'dart:convert';
 
 class FavouritesNotifier extends AsyncNotifier<List<VariantModel>> {
@@ -8,8 +8,7 @@ class FavouritesNotifier extends AsyncNotifier<List<VariantModel>> {
 
   @override
   Future<List<VariantModel>> build() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getStringList(_prefsKey) ?? [];
+    final saved = JLocalStorage.instance().readData<List<String>>(_prefsKey) ?? [];
     if (saved.isNotEmpty) {
       return saved.map((s) => VariantModel.fromJson(json.decode(s))).toList();
     }
@@ -17,14 +16,13 @@ class FavouritesNotifier extends AsyncNotifier<List<VariantModel>> {
   }
 
   Future<void> _saveToPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
     final current =
         state is AsyncData<List<VariantModel>>
             ? (state as AsyncData<List<VariantModel>>).value
             : <VariantModel>[];
-    await prefs.setStringList(
+    await JLocalStorage.instance().saveData(
       _prefsKey,
-      current.map((d) => json.encode(_toJson(d))).toList(),
+      current.map((d) => json.encode(d.toJson())).toList(),
     );
   }
 
@@ -58,24 +56,7 @@ class FavouritesNotifier extends AsyncNotifier<List<VariantModel>> {
     return current.any((d) => d.snpData.rsId == rsId);
   }
 
-  Map<String, dynamic> _toJson(VariantModel d) {
-    // You may want to add a toJson method to VariantDossier for more robust serialization
-    return {
-      'snpData': {
-        'rsId': d.snpData.rsId,
-        'gene': d.snpData.gene,
-        'clinicalSignificance': d.snpData.clinicalSignificance,
-        'phenotypes': d.snpData.phenotypes,
-      },
-      'pubmedData': [], // Not persisted for brevity
-      'gwasData': {
-        'rsId': d.gwasData.rsId,
-        'significantTraits': d.gwasData.significantTraits,
-        'traitCount': d.gwasData.traitCount,
-      },
-      'aiSummary': d.aiSummary,
-    };
-  }
+  
 }
 
 final favouritesProvider =

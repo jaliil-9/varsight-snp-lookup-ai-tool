@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:varsight/core/constants/colors.dart';
 import 'package:varsight/core/constants/sizes.dart';
+import 'package:varsight/core/utils/clinical_significance_utils.dart';
 import 'package:varsight/features/snp_search/models/variant_model.dart';
 import 'package:varsight/features/snp_search/notifiers/favourites_notifier.dart';
 import 'package:varsight/features/snp_search/notifiers/recent_searches_notifier.dart';
@@ -257,26 +258,8 @@ class VariantSummaryCard extends ConsumerWidget {
   }
 
   String _curatedClinicalSignificance(String clinicalSignificance) {
-    // Use official ACMG clinical significance terms
-    const acmgTerms = [
-      'Pathogenic',
-      'Likely-pathogenic',
-      'Uncertain-significance',
-      'Likely-benign',
-      'Benign',
-      'risk-factor',
-      'drug-response',
-    ];
-
-    final lower = clinicalSignificance.toLowerCase();
-    final found = <String>[];
-
-    for (final term in acmgTerms) {
-      if (lower.contains(term.toLowerCase())) {
-        found.add(term);
-      }
-    }
-
-    return found.isEmpty ? clinicalSignificance : found.join(', ');
+    return ClinicalSignificanceUtils.curateClinicalSignificance(
+      clinicalSignificance,
+    );
   }
 }

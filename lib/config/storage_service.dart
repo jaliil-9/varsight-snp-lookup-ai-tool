@@ -2,8 +2,6 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 
-import 'package:varsight/core/utils/error.dart';
-
 class StorageService {
   static Future<bool> requestStoragePermission() async {
     try {
@@ -19,7 +17,6 @@ class StorageService {
 
           // Check if any permission was denied
           if (status.values.any((status) => status.isDenied)) {
-            ErrorUtils.showErrorSnackBar("Media permission denied");
             return false;
           }
 
@@ -27,7 +24,6 @@ class StorageService {
         } else {
           final status = await Permission.storage.request();
           if (status.isDenied) {
-            ErrorUtils.showErrorSnackBar("Media permission denied");
             return false;
           }
           return status.isGranted;
@@ -36,7 +32,6 @@ class StorageService {
         final status = await [Permission.photos, Permission.videos].request();
 
         if (status.values.any((status) => status.isDenied)) {
-          ErrorUtils.showErrorSnackBar("Media permission denied");
           return false;
         }
 
@@ -44,7 +39,6 @@ class StorageService {
       }
       return false;
     } catch (e) {
-      ErrorUtils.showErrorSnackBar("Failed to request storage permission");
       return false;
     }
   }

@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:io';
-
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:varsight/features/snp_search/models/search_state.dart';
-import 'package:varsight/features/snp_search/providers/snp_provider.dart';
+import 'package:varsight/features/snp_search/models/search_step.dart';
 import 'package:varsight/core/services/network.dart';
+
+import 'package:varsight/features/snp_search/providers/snp_provider.dart';
 
 class SearchNotifier extends AsyncNotifier<SearchState> {
   late final NetworkService _networkService;
@@ -17,44 +17,61 @@ class SearchNotifier extends AsyncNotifier<SearchState> {
   }
 
   Future<void> search(String rsId) async {
-    state = await AsyncValue.guard(() async {
-      // Check network connectivity before proceeding
-      final isConnected = await _networkService.isConnected();
-      if (!isConnected) {
-        throw SocketException('No internet connection');
-      }
+    final isConnected = await _networkService.isConnected();
+    if (!isConnected) {
+      state = AsyncValue.error('No internet connection', StackTrace.current);
+      return;
+    }
 
-      // Step 1: Gene Information (2 seconds)
-      final geneInfoState = SearchState.loading(SearchStep.geneInfo);
-      state = AsyncValue.data(geneInfoState);
-      await Future.delayed(const Duration(seconds: 2));
+    // Use a Completer to signal when the background fetch is done
+    final completer = Completer<void>();
 
-      // Step 2: Literature Analysis (2 seconds)
-      final literatureState = SearchState.loading(SearchStep.literature);
-      state = AsyncValue.data(literatureState);
-      await Future.delayed(const Duration(seconds: 2));
+    // Immediately start showing the stepper UI
+    state = AsyncValue.data(SearchState.loading(SearchStep.geneInfo));
 
-      // Step 3: Results Synthesis (start showing, but continue until response is ready)
-      final synthesisState = SearchState.loading(SearchStep.synthesis);
-      state = AsyncValue.data(synthesisState);
-      final startTime = DateTime.now();
+    // Run the actual fetch in the background
+    _fetchDataInBackground(rsId, completer);
 
+    // Update the stepper UI based on time, independent of the fetch
+    await _updateStepper();
+
+    // Wait for the background fetch to complete before finishing
+    await completer.future;
+  }
+
+  Future<void> _updateStepper() async {
+    await Future.delayed(const Duration(seconds: 2));
+    if (state.value?.isLoading == true) {
+      state = AsyncValue.data(SearchState.loading(SearchStep.literature));
+    }
+
+    await Future.delayed(const Duration(seconds: 3));
+    if (state.value?.isLoading == true) {
+      state = AsyncValue.data(SearchState.loading(SearchStep.synthesis));
+    }
+  }
+
+  Future<void> _fetchDataInBackground(
+    String rsId,
+    Completer<void> completer,
+  ) async {
+    try {
       final repo = ref.read(snpRepositoryProvider);
       final dossier = await repo.fetchSnpDossier(rsId);
 
-      // If the response came back in less than 3 seconds since starting step 3,
-      // wait for the remaining time
-      final elapsedTime = DateTime.now().difference(startTime);
-      if (elapsedTime < const Duration(seconds: 3)) {
-        await Future.delayed(const Duration(seconds: 3) - elapsedTime);
+      // If the UI is still loading, update it with the success state
+      if (state.value?.isLoading == true) {
+        state = AsyncValue.data(SearchState.success(dossier));
       }
-
-      // Save the result
-      final snpNotifier = ref.read(snpDossierProvider.notifier);
-      await snpNotifier.saveDossierLocally(dossier);
-
-      return SearchState.success(dossier);
-    });
+    } catch (e, st) {
+      // If the UI is still loading, update it with the error state
+      if (state.value?.isLoading == true) {
+        state = AsyncValue.error(e, st);
+      }
+    } finally {
+      // Signal that the background work is done
+      completer.complete();
+    }
   }
 
   void clear() {

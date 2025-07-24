@@ -61,8 +61,8 @@ class ProfileRepository {
       final uri = Uri.parse(profilePictureUrl);
       final filename = uri.pathSegments.last;
       await client.storage.from('profile-images').remove([filename]);
-    } catch (e) {
-      throw Exception('Failed to delete profile picture: $e');
+    } catch (_) {
+      rethrow;
     }
   }
 }

@@ -8,6 +8,9 @@ import 'package:varsight/features/personalization/providers/profile_providers.da
 
 sealed class AuthState {
   const AuthState();
+
+  bool get isAuthenticated => this is AuthAuthenticated;
+  bool get isGuest => this is AuthGuest;
 }
 
 class AuthAuthenticated extends AuthState {
