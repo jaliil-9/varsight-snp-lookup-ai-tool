@@ -5,7 +5,8 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
     <!-- Permissions for Android 12 (API level 32) and below -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
 
     <application

@@ -91,26 +91,6 @@ backend/
     ```
     Replace `YOUR_SUPABASE_URL`, `YOUR_SUPABASE_ANON_KEY`, and `YOUR_BACKEND_API_URL` with your actual values.
 
-4.  **Set up backend environment variables:**
-    Navigate to the `backend` directory:
-    ```bash
-    cd backend
-    ```
-    Create a `.env` file in the `backend` directory and add the following:
-    ```
-    NCBI_API_KEY=YOUR_NCBI_API_KEY
-    GROQ_API_KEY=YOUR_GROQ_API_KEY
-    API_HOST=127.0.0.1
-    API_PORT=8000
-    ```
-    Replace `YOUR_NCBI_API_KEY` and `YOUR_GROQ_API_KEY` with your actual API keys. You can adjust `API_HOST` and `API_PORT` as needed.
-
-5.  **Install backend dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-6.  **Run the backend server:**
 
 7.  **Run the Flutter application:**
     Open a new terminal, navigate back to the root of the *frontend* project (`cd ..`), and run:

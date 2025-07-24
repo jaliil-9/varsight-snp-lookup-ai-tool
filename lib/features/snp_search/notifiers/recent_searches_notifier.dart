@@ -11,7 +11,8 @@ class RecentSearchesNotifier extends Notifier<List<String>> {
   }
 
   Future<void> _loadFromPrefs() async {
-    final saved = JLocalStorage.instance().readData<List<String>>(_prefsKey) ?? [];
+    final saved =
+        JLocalStorage.instance().readData<List<String>>(_prefsKey) ?? [];
     if (saved.isNotEmpty) {
       state = saved;
     }

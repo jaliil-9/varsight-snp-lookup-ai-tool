@@ -19,9 +19,15 @@ Future<void> main() async {
     // Load environment variables
     await dotenv.load(fileName: ".env");
 
-    // Capture Supabase environment variables into local variables
-    final String supabaseUrl = dotenv.env['SUPABASE_URL']!;
-    final String supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY']!;
+    // Capture Supabase environment variables with validation
+    final String? supabaseUrl = dotenv.env['SUPABASE_URL'];
+    final String? supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
+
+    if (supabaseUrl == null || supabaseAnonKey == null) {
+      throw Exception(
+        'Missing required environment variables: SUPABASE_URL or SUPABASE_ANON_KEY',
+      );
+    }
 
     // Initialize local storage
     await JLocalStorage.init();
@@ -34,9 +40,29 @@ Future<void> main() async {
 
     runApp(const ProviderScope(child: VarSightApp()));
   } catch (e) {
-    // Optionally, show an error screen or dialog here if the app can't start
-    // For now, just rethrow to see the error in console
-    rethrow;
+    // Log the error for debugging
+    debugPrint('App initialization failed: $e');
+
+    // Show error to user instead of crashing
+    FlutterNativeSplash.remove();
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                const Text('Failed to initialize app'),
+                const SizedBox(height: 8),
+                Text('Error: $e', style: const TextStyle(fontSize: 12)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

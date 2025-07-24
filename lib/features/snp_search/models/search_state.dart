@@ -28,7 +28,7 @@ class SearchState {
       error: error ?? this.error,
       dossier: dossier ?? this.dossier,
       currentStep: currentStep,
-      stepStartTime: stepStartTime,
+      stepStartTime: stepStartTime ?? this.stepStartTime,
     );
   }
 
