@@ -87,13 +87,12 @@ backend/
     ```
     SUPABASE_URL=YOUR_SUPABASE_URL
     SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
-    BACKEND_URL=YOUR_BACKEND_API_URL
     ```
-    Replace `YOUR_SUPABASE_URL`, `YOUR_SUPABASE_ANON_KEY`, and `YOUR_BACKEND_API_URL` with your actual values.
+    Replace `YOUR_SUPABASE_URL`, and `YOUR_SUPABASE_ANON_KEY` with your actual values.
 
 
-7.  **Run the Flutter application:**
-    Open a new terminal, navigate back to the root of the *frontend* project (`cd ..`), and run:
+4.  **Run the Flutter application:**
+    Open a new terminal, navigate back to the root of the project (`cd ..`), and run:
     ```bash
     flutter run
     ```
