@@ -3,9 +3,11 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:get/get.dart';
 import 'package:varsight/config/routes.dart';
 import 'package:varsight/core/utils/storage.dart';
 import 'package:varsight/features/personalization/notifiers/theme_notifier.dart';
+import 'package:varsight/core/utils/error.dart';
 import 'package:varsight/config/themes.dart';
 
 Future<void> main() async {
@@ -45,6 +47,7 @@ Future<void> main() async {
 
     // Show error to user instead of crashing
     FlutterNativeSplash.remove();
+    ErrorUtils.showErrorSnackBar(ErrorUtils.getErrorMessage(e), title: 'App Initialization Failed');
     runApp(
       MaterialApp(
         home: Scaffold(
@@ -77,6 +80,7 @@ class VarSightApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
+      navigatorKey: Get.key,
       initialRoute: '/auth',
       routes: AppRoutes.routes,
     );

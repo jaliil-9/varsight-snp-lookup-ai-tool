@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:varsight/core/constants/colors.dart';
 import 'package:varsight/core/constants/sizes.dart';
+import 'package:varsight/core/utils/error.dart';
 import 'package:varsight/features/snp_search/models/variant_model.dart';
 
 class PubmedTab extends StatelessWidget {
@@ -33,8 +34,12 @@ class PubmedArticleCard extends StatelessWidget {
 
   Future<void> _launchURL(String url) async {
     final Uri uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      throw Exception('Could not launch $url');
+    try {
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        throw Exception('Could not launch $url');
+      }
+    } catch (e) {
+      ErrorUtils.showErrorSnackBar(ErrorUtils.getErrorMessage(e));
     }
   }
 

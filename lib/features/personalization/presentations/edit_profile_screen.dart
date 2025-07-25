@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:varsight/core/utils/error.dart';
+import 'package:varsight/features/personalization/models/profile_model.dart';
 import 'package:varsight/features/personalization/providers/profile_providers.dart';
 import 'package:varsight/features/authentication/providers/auth_provider.dart';
 import 'package:varsight/features/authentication/notifiers/auth_notifier.dart';
@@ -51,8 +52,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (mounted) Navigator.pop(context);
     } else {
       ErrorUtils.showErrorSnackBar(
-        context,
-        "Could not save profile. User not found.",
+        ErrorUtils.getErrorMessage(
+          Exception("Could not save profile. User not found."),
+        ),
       );
     }
   }
@@ -65,8 +67,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       await profileNotifier.pickAndUploadImage(userId);
     } else {
       ErrorUtils.showErrorSnackBar(
-        context,
-        "Could not upload image. User not found.",
+        ErrorUtils.getErrorMessage(
+          Exception("Could not upload image. User not found."),
+        ),
       );
     }
   }
@@ -74,6 +77,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(profileProvider);
+
+    ref.listen<AsyncValue<ProfileModel?>>(profileProvider, (previous, next) {
+      next.whenOrNull(
+        error: (err, stack) {
+          ErrorUtils.showErrorSnackBar(ErrorUtils.getErrorMessage(err));
+        },
+      );
+    });
     final isUploading = profileAsync.isLoading;
 
     return Scaffold(
@@ -82,10 +93,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            ErrorUtils.showErrorSnackBar(
-              context,
-              ErrorUtils.getErrorMessage(err),
-            );
+            ErrorUtils.showErrorSnackBar(ErrorUtils.getErrorMessage(err));
           });
           return Center(child: Text('Error loading profile'));
         },

@@ -1,14 +1,15 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:varsight/core/constants/colors.dart';
+import 'package:varsight/core/utils/error.dart';
 import 'package:varsight/core/constants/sizes.dart';
 import 'package:varsight/features/snp_search/models/search_state.dart';
 import 'package:varsight/features/snp_search/presentations/widgets/recent_searches_list.dart';
 import 'package:varsight/features/snp_search/presentations/widgets/variant_summary_card.dart';
 import 'package:varsight/features/snp_search/presentations/widgets/search_loading_stepper.dart';
 import 'package:varsight/features/snp_search/providers/snp_provider.dart';
+import 'package:varsight/features/snp_search/notifiers/recent_searches_notifier.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -31,6 +32,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     if (query.trim().isEmpty) return;
     final searchNotifier = ref.read(searchProvider.notifier);
     await searchNotifier.search(query.trim());
+    ref.read(recentSearchesProvider.notifier).addSearch(query.trim());
   }
 
   @override
@@ -44,11 +46,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           }
         },
         error: (err, stack) {
-          if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(err.toString())));
-          }
+          ErrorUtils.showErrorSnackBar(err.toString());
         },
         loading: () {},
       );

@@ -52,6 +52,7 @@ dependencies:
   device_info_plus: ^11.5.0
   flutter_dotenv: ^5.2.1
   flutter_markdown: ^0.7.7+1
+  get: ^4.6.6
 
 dev_dependencies:
   flutter_test:

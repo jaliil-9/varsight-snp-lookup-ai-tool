@@ -1,21 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:varsight/core/utils/storage.dart';
 
-class RecentSearchesNotifier extends Notifier<List<String>> {
+class RecentSearchesNotifier extends AsyncNotifier<List<String>> {
   static const _prefsKey = 'recent_searches';
 
   @override
-  List<String> build() {
-    _loadFromPrefs();
-    return [];
+  Future<List<String>> build() async {
+    return _loadFromPrefs();
   }
 
-  Future<void> _loadFromPrefs() async {
+  Future<List<String>> _loadFromPrefs() async {
     final saved =
         JLocalStorage.instance().readData<List<String>>(_prefsKey) ?? [];
-    if (saved.isNotEmpty) {
-      state = saved;
-    }
+    return saved;
   }
 
   Future<void> _saveToPrefs() async {
@@ -24,32 +21,28 @@ class RecentSearchesNotifier extends Notifier<List<String>> {
 
   void addSearch(String rsId) {
     if (rsId.isEmpty) return;
-    // Remove duplicates and maintain order
-    if (state.contains(rsId)) {
-      state = state.where((id) => id != rsId).toList();
-    }
-    // Add the new search at the start
-    // Limit to the last 10 searches
-    if (state.length >= 10) {
-      state.removeLast();
-    }
-    // Add the new search at the start
-    state = [rsId, ...state.where((id) => id != rsId)].take(10).toList();
-    _saveToPrefs();
+    state.whenData((currentList) {
+      final newList = [rsId, ...currentList.where((id) => id != rsId)].take(10).toList();
+      state = AsyncValue.data(newList);
+      _saveToPrefs();
+    });
   }
 
   void removeSearch(String rsId) {
-    state = state.where((id) => id != rsId).toList();
-    _saveToPrefs();
+    state.whenData((currentList) {
+      final newList = currentList.where((id) => id != rsId).toList();
+      state = AsyncValue.data(newList);
+      _saveToPrefs();
+    });
   }
 
   void clearAll() {
-    state = [];
+    state = const AsyncValue.data([]);
     _saveToPrefs();
   }
 }
 
 final recentSearchesProvider =
-    NotifierProvider<RecentSearchesNotifier, List<String>>(
+    AsyncNotifierProvider<RecentSearchesNotifier, List<String>>(
       RecentSearchesNotifier.new,
     );

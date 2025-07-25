@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:varsight/core/constants/colors.dart';
+import 'package:varsight/core/utils/error.dart';
 import 'package:varsight/core/constants/sizes.dart';
 import 'package:varsight/core/utils/clinical_significance_utils.dart';
 import 'package:varsight/features/snp_search/models/variant_model.dart';
@@ -118,11 +119,7 @@ class VariantSummaryCard extends ConsumerWidget {
                     final notifier = ref.read(favouritesProvider.notifier);
                     if (isFavourite) {
                       notifier.removeFavourite(snpData.rsId);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Removed from favourites'),
-                        ),
-                      );
+                      ErrorUtils.showInfoSnackBar('Removed from favourites');
                     } else {
                       // Try to get the full dossier from snpDossierProvider, fallback to minimal
                       final dossier = ref.read(snpDossierProvider).value;
@@ -145,9 +142,7 @@ class VariantSummaryCard extends ConsumerWidget {
                           ),
                         );
                       }
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Added to favourites')),
-                      );
+                      ErrorUtils.showSuccessSnackBar('Added to favourites');
                     }
                   },
                 ),

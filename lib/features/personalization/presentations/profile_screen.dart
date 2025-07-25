@@ -41,7 +41,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       error: (error, stackTrace) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           ErrorUtils.showErrorSnackBar(
-            context,
             ErrorUtils.getErrorMessage(error),
           );
         });
@@ -94,9 +93,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 error: (err, stack) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     ErrorUtils.showErrorSnackBar(
-                      context,
-                      ErrorUtils.getErrorMessage(err),
-                    );
+                    ErrorUtils.getErrorMessage(err),
+                  );
                   });
                   return const CircleAvatar(
                     radius: 56,
@@ -309,9 +307,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     ),
                               );
                               if (shouldLogout == true && context.mounted) {
-                                await ref
-                                    .read(authNotifierProvider.notifier)
-                                    .logout();
+                                try {
+                                  await ref
+                                      .read(authNotifierProvider.notifier)
+                                      .logout();
+                                } catch (e) {
+                                  ErrorUtils.showErrorSnackBar(ErrorUtils.getErrorMessage(e));
+                                }
                               }
                             }
                           },

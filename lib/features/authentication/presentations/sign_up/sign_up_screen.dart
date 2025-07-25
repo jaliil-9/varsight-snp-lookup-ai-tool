@@ -37,7 +37,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     ref.listen(authNotifierProvider, (_, state) {
       state.whenOrNull(
         error: (err, stack) {
-          ErrorUtils.showErrorSnackBar(context, ErrorUtils.getErrorMessage(err));
+          ErrorUtils.showErrorSnackBar(ErrorUtils.getErrorMessage(err));
         },
         data: (authState) {
           if (authState is AuthAuthenticated) {

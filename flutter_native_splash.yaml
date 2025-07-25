@@ -2,11 +2,11 @@ flutter_native_splash:
   image: assets/logo/varsight-no-bg.png
   image_dark: assets/logo/varsight-no-bg.png
   color: "#f0f8f8"
-  color_dark: "#0a7977"
+  color_dark: "#1A1F2C"
   android_12:
     image: assets/logo/varsight-no-bg.png
     image_dark: assets/logo/varsight-no-bg.png
     color: "#f0f8f8"
-    color_dark: "#0a7977"
+    color_dark: "#1A1F2C"
 
   web: false

@@ -77,7 +77,6 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                                 } catch (e) {
                                   if (mounted) {
                                     ErrorUtils.showErrorSnackBar(
-                                      context,
                                       ErrorUtils.getErrorMessage(e),
                                     );
                                   }

@@ -53,112 +53,122 @@ class _SearchHistoryScreenState extends ConsumerState<SearchHistoryScreen> {
             ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: recentSearches.length,
-        itemBuilder: (context, index) {
-          final rsId = recentSearches[index];
-          return FutureBuilder(
-            future: dossierNotifier.loadDossierLocally(rsId),
-            builder: (context, snapshot) {
-              final dossier = snapshot.data;
-              final gene = dossier?.snpData.gene ?? 'Unknown gene';
-              final significance = dossier?.snpData.clinicalSignificance ?? '';
-              final color = _getSignificanceColor(significance);
-              final isSelected = _selected.contains(rsId);
-              return Card(
-                elevation: 3,
-                margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(Sizes.borderRadiusLg),
-                  side: BorderSide(
-                    color:
-                        isSelected
-                            ? AppColors.primaryLight
-                            : Theme.of(context).dividerColor.withAlpha(60),
-                    width: isSelected ? 2 : 1,
-                  ),
-                ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(Sizes.borderRadiusLg),
-                  onTap: () async {
-                    final dossier = snapshot.data;
-                    if (dossier != null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => VariantFullReport(dossier: dossier),
-                        ),
-                      );
-                    } else {
-                      await dossierNotifier.fetchDossier(rsId);
-                    }
-                  },
-                  onLongPress: () {
-                    setState(() {
-                      if (isSelected) {
-                        _selected.remove(rsId);
-                      } else {
-                        _selected.add(rsId);
-                      }
-                    });
-                  },
-                  child: ListTile(
-                    leading: Checkbox(
-                      value: isSelected,
-                      onChanged: (checked) {
+      body: recentSearches.when(
+        data: (recentSearchesList) {
+          if (recentSearchesList.isEmpty) {
+            return const Center(child: Text('No search history yet.'));
+          }
+          return ListView.builder(
+            itemCount: recentSearchesList.length,
+            itemBuilder: (context, index) {
+              final rsId = recentSearchesList[index];
+              return FutureBuilder(
+                future: dossierNotifier.loadDossierLocally(rsId),
+                builder: (context, snapshot) {
+                  final dossier = snapshot.data;
+                  final gene = dossier?.snpData.gene ?? 'Unknown gene';
+                  final significance = dossier?.snpData.clinicalSignificance ?? '';
+                  final color = _getSignificanceColor(significance);
+                  final isSelected = _selected.contains(rsId);
+                  return Card(
+                    elevation: 3,
+                    margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(Sizes.borderRadiusLg),
+                      side: BorderSide(
+                        color:
+                            isSelected
+                                ? AppColors.primaryLight
+                                : Theme.of(context).dividerColor.withAlpha(60),
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(Sizes.borderRadiusLg),
+                      onTap: () async {
+                        final dossier = snapshot.data;
+                        if (dossier != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) =>
+                                      VariantFullReport(dossier: dossier),
+                            ),
+                          );
+                        } else {
+                          await dossierNotifier.fetchDossier(rsId);
+                        }
+                      },
+                      onLongPress: () {
                         setState(() {
-                          if (checked == true) {
-                            _selected.add(rsId);
-                          } else {
+                          if (isSelected) {
                             _selected.remove(rsId);
+                          } else {
+                            _selected.add(rsId);
                           }
                         });
                       },
-                    ),
-                    title: Row(
-                      children: [
-                        Text(
-                          rsId,
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(fontWeight: FontWeight.w600),
+                      child: ListTile(
+                        leading: Checkbox(
+                          value: isSelected,
+                          onChanged: (checked) {
+                            setState(() {
+                              if (checked == true) {
+                                _selected.add(rsId);
+                              } else {
+                                _selected.remove(rsId);
+                              }
+                            });
+                          },
                         ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            gene,
-                            style: TextStyle(
-                              color: color,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
+                        title: Row(
+                          children: [
+                            Text(
+                              rsId,
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(fontWeight: FontWeight.w600),
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: color.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                gene,
+                                style: TextStyle(
+                                  color: color,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_outline),
+                          color: AppColors.error,
+                          tooltip: 'Delete',
+                          onPressed: () {
+                            notifier.removeSearch(rsId);
+                            setState(() => _selected.remove(rsId));
+                          },
+                        ),
+                      ),
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline),
-                      color: AppColors.error,
-                      tooltip: 'Delete',
-                      onPressed: () {
-                        notifier.removeSearch(rsId);
-                        setState(() => _selected.remove(rsId));
-                      },
-                    ),
-                  ),
-                ),
+                  );
+                },
               );
             },
           );
         },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: ${err.toString()}')),
       ),
     );
   }

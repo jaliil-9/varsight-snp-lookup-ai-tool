@@ -5,10 +5,8 @@ import 'package:varsight/features/snp_search/notifiers/search_notifier.dart';
 import 'package:varsight/features/snp_search/notifiers/snp_dossier_notifier.dart';
 import 'package:varsight/features/snp_search/repositories/snp_repository.dart';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 // Updated backend URL for local development
-String _backendBaseUrl = dotenv.env['BACKEND_URL']!;
+const String _backendBaseUrl = "https://varsight-api.onrender.com";
 
 final snpRepositoryProvider = Provider<SnpRepository>((ref) {
   return SnpRepository(baseUrl: _backendBaseUrl);

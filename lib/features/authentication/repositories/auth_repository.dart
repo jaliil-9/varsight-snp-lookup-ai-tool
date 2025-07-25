@@ -19,7 +19,6 @@ class AuthRepository {
       );
 
       // Debug: print the response for troubleshooting
-      
 
       if (response.user == null) {
         // Check if email confirmation is required

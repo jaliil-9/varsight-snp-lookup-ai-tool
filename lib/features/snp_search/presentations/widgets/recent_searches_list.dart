@@ -14,121 +14,130 @@ class RecentSearchesList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final recentSearches = ref.watch(recentSearchesProvider);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: Sizes.spaceBtwSections),
-        if (recentSearches.isNotEmpty)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+    return recentSearches.when(
+      data: (recentSearchesList) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: Sizes.spaceBtwSections),
+            if (recentSearchesList.isNotEmpty)
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    width: 8,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Recently searched',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.displaySmall?.copyWith(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Recently searched',
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SearchHistoryScreen(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'View all',
+                      style: TextStyle(
+                        color:
+                            isDarkMode
+                                ? AppColors.primaryDark
+                                : AppColors.primaryLight,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
               ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SearchHistoryScreen(),
+            if (recentSearchesList.isNotEmpty)
+              ListView.builder(
+                itemCount: recentSearchesList.length,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  final rsId = recentSearchesList[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: Sizes.sm),
+                    child: Card(
+                      margin: const EdgeInsets.symmetric(
+                        vertical: 2,
+                        horizontal: 0,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          Sizes.borderRadiusLg,
+                        ),
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: Sizes.sm,
+                          horizontal: Sizes.md,
+                        ),
+                        title: Row(
+                          children: [
+                            Text(
+                              rsId,
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                        trailing: Icon(
+                          Icons.chevron_right,
+                          color:
+                              isDarkMode
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
+                        ),
+                        onTap: () async {
+                          final notifier = ref.read(
+                            snpDossierProvider.notifier,
+                          );
+                          final dossier = await notifier.loadDossierLocally(
+                            rsId,
+                          );
+                          if (dossier != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) =>
+                                        VariantFullReport(dossier: dossier),
+                              ),
+                            );
+                          } else {
+                            await notifier.fetchDossier(rsId);
+                          }
+                        },
+                      ),
                     ),
                   );
                 },
-                child: Text(
-                  'View all',
-                  style: TextStyle(
-                    color:
-                        isDarkMode
-                            ? AppColors.primaryDark
-                            : AppColors.primaryLight,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
               ),
-            ],
-          ),
-        if (recentSearches.isNotEmpty)
-          ListView.builder(
-            itemCount: recentSearches.length,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              final rsId = recentSearches[index];
-              // Try to get gene info from favourites or cache if available
-              // This is a simple example: you could enhance by caching gene info
-              // or using a provider for a local cache
-              // ...
-              // For now, just show rsId
-              return Padding(
-                padding: const EdgeInsets.only(bottom: Sizes.sm),
-                child: Card(
-                  margin: const EdgeInsets.symmetric(
-                    vertical: 2,
-                    horizontal: 0,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(Sizes.borderRadiusLg),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: Sizes.sm,
-                      horizontal: Sizes.md,
-                    ),
-                    title: Row(
-                      children: [
-                        Text(
-                          rsId,
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                    trailing: Icon(
-                      Icons.chevron_right,
-                      color:
-                          isDarkMode
-                              ? AppColors.textSecondaryDark
-                              : AppColors.textSecondaryLight,
-                    ),
-                    onTap: () async {
-                      final notifier = ref.read(snpDossierProvider.notifier);
-                      final dossier = await notifier.loadDossierLocally(rsId);
-                      if (dossier != null) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) =>
-                                    VariantFullReport(dossier: dossier),
-                          ),
-                        );
-                      } else {
-                        await notifier.fetchDossier(rsId);
-                      }
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
-      ],
+          ],
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Error: ${err.toString()}')),
     );
   }
 }

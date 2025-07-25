@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:varsight/core/constants/colors.dart';
+import 'package:varsight/core/utils/error.dart';
 import 'package:varsight/core/constants/sizes.dart';
 
 class AiSummaryTab extends StatelessWidget {
@@ -107,13 +108,8 @@ class AiSummaryTab extends StatelessWidget {
               ),
               onPressed: () async {
                 await Clipboard.setData(ClipboardData(text: summary));
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('AI Summary copied to clipboard'),
-                    ),
-                  );
-                }
+                ErrorUtils.showSuccessSnackBar(
+                    'AI Summary copied to clipboard');
               },
               icon: const Icon(Iconsax.copy, size: 20),
               label: const Text('Copy to Clipboard'),
